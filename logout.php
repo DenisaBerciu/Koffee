@@ -1,0 +1,10 @@
+<?php
+    session_start();
+    unset($_SESSION['nume']);
+    unset($_SESSION['password']);
+    unset($_COOKIE['nume']);
+    unset($_COOKIE['password']);
+    setcookie('nume','',time()-60*60*24*365);
+    setcookie('password','',time()-60*60*24*365);
+    header('location:index.php');
+?>
