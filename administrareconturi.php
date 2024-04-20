@@ -1,33 +1,36 @@
 <?php
 session_start();
-include('connection.php');
-
-// Verifică dacă utilizatorul este autentificat și este admin
-if (!isset($_SESSION['ADMIN'])) {
-    header('location: index.php'); // Redirecționează utilizatorul către pagina de autentificare sau altă pagină potrivită
+if (!isset($_SESSION['rol']) || $_SESSION['rol'] != 'admin') {
+    header('Location: login.php');
     exit;
 }
-
-// Verifică dacă a fost trimis un formular pentru ștergerea unui cont
-if (isset($_POST['delete_account'])) {
-    $id = $_POST['id'];
-
-    // Execută interogarea pentru ștergerea contului
-    $delete_query = mysqli_query($con, "DELETE FROM koffee WHERE id = '$id'");
-
-    if ($delete_query) {
-        // Contul a fost șters cu succes
-        header('location: administrareconturi.php'); // Redirecționează utilizatorul înapoi la pagina de administrare a conturilor
-        exit;
+$xml = new DOMDocument();
+$xml->preserveWhiteSpace = false;
+$xml->formatOutput = true;
+if (!$xml->load('utilizatori.xml')) {
+    die('Eroare la încărcarea fișierului XML.');
+}
+$xpath = new DOMXPath($xml);
+$message = ""; 
+if (isset($_GET['delete_account'])) {
+    if (!empty($_GET['nume'])) {
+        $nume = htmlspecialchars($_GET['nume']);
+        $query = "/utilizatori/utilizator[nume/text() = '$nume']";
+        $results = $xpath->query($query);
+        if ($results->length > 0) {
+            foreach ($results as $node) {
+                $node->parentNode->removeChild($node);
+            }
+            $xml->save('utilizatori.xml');
+            header('Location: administrareconturi.php');  
+            exit;
+        } else {
+            $message = "Utilizatorul nu există sau nu a fost găsit.";
+        }
     } else {
-        // Eroare la ștergerea contului
-        echo "Eroare la ștergerea contului.";
+        $message = "Informații insuficiente pentru a șterge un utilizator.";
     }
 }
-
-// Obține toate conturile din baza de date
-$select_query = mysqli_query($con, "SELECT * FROM koffee");
-$accounts = mysqli_fetch_all($select_query, MYSQLI_ASSOC);
 ?>
 
 <!DOCTYPE html>
@@ -66,31 +69,26 @@ $accounts = mysqli_fetch_all($select_query, MYSQLI_ASSOC);
                         <li class="nav-item px-lg-4"><a class="nav-link text-uppercase" href="store.php">Cafenea</a></li>
                         <?php 
                         if(isset($_SESSION['nume'])){
-                        echo '<li class="nav-item dropdown">';
+                            echo '<li class="nav-item dropdown">';
                             echo '<a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" >'.$_SESSION["nume"].'</a>';
                             echo '<ul class="dropdown-menu" aria-labelledby="navbarDropdown">';
-                                
-                                 if(isset($_SESSION['nume'])){
-                                    $pos = "";
-                                    if($pos == 'admin' ){
-                                       echo '<li><a class="dropdown-item" href="administrareconturi.php">Administrare conturi</a></li>';
-                                       echo '<li><hr class="dropdown-divider" /></li>';
-                                        }
-                                        
-                                    }
-                                    echo '<li><a class="dropdown-item" href="logout.php">Logout</a></li>';
-                                    echo '</ul>';
-                                    echo '</li>';
-                                    }
-                                    else{
-                                        echo '<li class="nav-item px-lg-4"><a class="nav-link text-uppercase" href="login.php">Cont</a></li>';
-                                    }
-                                    ?>
+                            $pos = $_SESSION['rol'] ?? ''; 
+                            if($pos == 'admin' ){
+                               echo '<li><a class="dropdown-item" href="incarcarefisiere.php">Încărcare fișiere</a></li>';
+                               echo '<li><hr class="dropdown-divider" /></li>';
+                            }
+                            echo '<li><a class="dropdown-item" href="logout.php">Logout</a></li>';
+                            echo '</ul>';
+                            echo '</li>';
+                        }
+                        else{
+                            echo '<li class="nav-item px-lg-4"><a class="nav-link text-uppercase" href="login.php">Cont</a></li>';
+                        }
+                        ?>
                     </ul>
                 </div>
             </div>
         </nav>
-        
         <section class="page-section cta">
             <div class="container">
                 <div class="row">
@@ -99,30 +97,16 @@ $accounts = mysqli_fetch_all($select_query, MYSQLI_ASSOC);
                             <h2 class="section-heading mb-5">
                                 <span class="section-heading-lower">Administrare conturi</span>
                             </h2>
-                            <table border="2" width="100%">
-                                <tr>
-                                    <th style="border: 2px solid black;">ID</th>
-                                    <th style="border: 2px solid black;">Nume</th>
-                                    <th style="border: 2px solid black;">Parola</th>
-                                    <th style="border: 2px solid black;">Tip</th>
-                                    <th style="border: 2px solid black;">Acțiuni</th>
-                                </tr>
-                                    <?php foreach ($accounts as $account) { ?>
-                                <tr>
-                                    <td style="border: 1px solid black;"><?php echo $account['id']; ?></td>
-                                    <td style="border: 1px solid black;"><?php echo $account['nume']; ?></td>
-                                    <td style="border: 1px solid black;"><?php echo $account['parola']; ?></td>
-                                    <td style="border: 1px solid black;"><?php echo $account['utilizator']; ?></td>
-                                    <td style="border: 1px solid black;">
-                                        <form method="post" onsubmit="return confirm('Ești sigur că vrei să ștergi acest cont?');">
-                                            <input type="hidden" name="id" value="<?php echo $account['id']; ?>">
-                                            <input type="submit" name="delete_account" value="Șterge" style="background-color: #f6e1c5; color: black;">
-                                        </form>
-                                    </td>
-                                    
-                                </tr>
-                                    <?php } ?>
-                            </table>
+                            <?php if (!empty($message)) { echo "<p style='color:red;'>$message</p>"; } ?>
+                            <?php
+                            $doc = new DOMDocument();
+                            $xsl = new DOMDocument();
+                            $doc->load('utilizatori.xml');
+                            $xsl->load('utilizatori.xsl');
+                            $processor = new XSLTProcessor();
+                            $processor->importStylesheet($xsl);
+                            echo $processor->transformToXML($doc);
+                            ?>
                         </div>
                     </div>
                 </div>

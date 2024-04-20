@@ -1,19 +1,5 @@
 <?php
-    include "connectionimg.php";
-?>
-<?php
-include 'connection.php';
 session_start();
-if(isset($_COOKIE['nume']) && !isset($_SESSION['nume']))
-{
-	$_SESSION['nume'] = $_COOKIE['nume'];
-}
-if(isset($_SESSION['nume'])){
-    $sql="SELECT * FROM koffee WHERE nume='{$_SESSION['nume']}'";
-    $query=mysqli_query($con,$sql) or die(mysqli_query($con));
-    $record=mysqli_fetch_array($query);
-    $pos=$record['utilizator'];
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -71,43 +57,46 @@ if(isset($_SESSION['nume'])){
                                         echo '<li class="nav-item px-lg-4"><a class="nav-link text-uppercase" href="login.php">Cont</a></li>';
                                     }
                                     ?>
-                    </ul>
-                </div>
+                                    </ul>
+                                </div>
+                            </div>
+                        </nav>
+    <section class="page-section cta">
+    <div class="container">
+        <div class="row">
+            <div class="gallery">
+                <table>
+                    <tr>
+                        <?php
+                        if (file_exists('images.xml')) {
+                            $xml = simplexml_load_file('images.xml');
+                            $count = 0;
+                            foreach ($xml->images->image as $image) {
+                                if ($count % 3 == 0 && $count > 0) {
+                                    echo '</tr><tr>'; 
+                                }
+                                echo '<td>';
+                                echo '<div class="cta-inner bg-faded text-center rounded" style="width: 350px; height: 350px;">';
+                                echo '<img src="' . $image->src . '" alt="' . $image->name . '" style="width: 250px; height: 250px;" />';
+                                echo '</div>';
+                                echo '</td>';
+                                $count++;
+                            }
+                            if ($count % 3 != 0) {
+                                echo '</tr>';
+                            }
+                        } else {
+                            echo '<p>Fișierul images.xml nu a fost găsit.</p>';
+                        }
+                        ?>
+                    </tr>
+                </table>
             </div>
-        </nav>
-        <section class="page-section cta">
-            <div class="container">
-                <div class="row">
-                    <div class="gallery">
-                        <table>
-                            <tr>
-                                <?php
-                                $result = mysqli_query($con, "SELECT * FROM imagini");
-                                $count = 0;
-                                while ($row = mysqli_fetch_array($result)) {
-                                    if ($count % 3 == 0) {
-                                        echo '<tr>';
-                                    }
-                                    echo '<td>';
-                                    echo '<div class="cta-inner bg-faded text-center rounded" style="width: 350px; height: 350px;" style="text-align: center;">';
-                                    echo '<img src="' . $row['cale_imagine'] . '" style="width: 250px; height: 250px;" />';
-                                    echo '</div>';
-                                    echo '</td>';
-                                    if ($count % 3 == 2) {
-                                        echo '</tr>';
-                                    }
-                                    $count++;
-                                    }
-                                    if ($count % 3 != 0) {
-                                        echo '</tr>';
-                                    }
-                                    ?>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </section>
+        </div>
+    </div>
+</section>
+
+
         <footer class="footer text-faded text-center py-5">
             <div class="container"><p class="m-0 small">Copyright &copy; Koffee 2023</p></div><br>
         </footer>

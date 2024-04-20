@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="utilizatori.xsl"?>
+<!DOCTYPE utilizatori [
+<!ELEMENT utilizatori (utilizator)*>
+<!ELEMENT utilizator (nume , parola , rol , link?)>
+<!ELEMENT nume (#PCDATA)>
+<!ELEMENT parola (#PCDATA)>
+<!ELEMENT rol (#PCDATA)>
+<!ELEMENT link EMPTY>
+<!ATTLIST link xlink:href CDATA #REQUIRED>
+<!ATTLIST link xlink:title CDATA #REQUIRED>
+<!ATTLIST link xmlns:xlink CDATA "http://www.w3.org/1999/xlink">
+]>
+<utilizatori xmlns:xlink="http://www.w3.org/1999/xlink">
+  <utilizator>
+    <nume>denisa</nume>
+    <parola>denisa</parola>
+    <rol>admin</rol>
+    <link xlink:href="administrareconturi.php?delete_account=1&amp;nume=denisa" xlink:title="Șterge"/>
+  </utilizator>
+</utilizatori>

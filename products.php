@@ -1,16 +1,5 @@
 <?php
-include 'connection.php';
 session_start();
-if(isset($_COOKIE['nume']) && !isset($_SESSION['nume']))
-{
-	$_SESSION['nume'] = $_COOKIE['nume'];
-}
-if(isset($_SESSION['nume'])){
-    $sql="SELECT * FROM koffee WHERE nume='{$_SESSION['nume']}'";
-    $query=mysqli_query($con,$sql) or die(mysqli_query($con));
-    $record=mysqli_fetch_array($query);
-    $pos=$record['utilizator'];
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,8 +22,8 @@ if(isset($_SESSION['nume'])){
                 <span class="site-heading-lower">Koffee</span>
             </h1>
         </header>
-        <!-- Navigation-->
-        <nav class="navbar navbar-expand-lg navbar-dark py-lg-4" id="mainNav">
+       <!-- Navigation-->
+       <nav class="navbar navbar-expand-lg navbar-dark py-lg-4" id="mainNav">
             <div class="container">
                 <a class="navbar-brand text-uppercase fw-bold d-lg-none" href="index.html">KOFFEE</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
@@ -48,25 +37,23 @@ if(isset($_SESSION['nume'])){
                         <li class="nav-item px-lg-4"><a class="nav-link text-uppercase" href="store.php">Cafenea</a></li>
                         <?php 
                         if(isset($_SESSION['nume'])){
-                        echo '<li class="nav-item dropdown">';
+                            echo '<li class="nav-item dropdown">';
                             echo '<a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" >'.$_SESSION["nume"].'</a>';
                             echo '<ul class="dropdown-menu" aria-labelledby="navbarDropdown">';
-                                
-                                 if(isset($_SESSION['nume'])){
-                                    if($pos == 'admin' ){
-                                       echo '<li><a class="dropdown-item" href="administrareconturi.php">Administrare conturi</a></li>';
-                                       echo '<li><hr class="dropdown-divider" /></li>';
-                                        }
-                                        
-                                    }
-                                    echo '<li><a class="dropdown-item" href="logout.php">Logout</a></li>';
-                                    echo '</ul>';
-                                    echo '</li>';
-                                    }
-                                    else{
-                                        echo '<li class="nav-item px-lg-4"><a class="nav-link text-uppercase" href="login.php">Cont</a></li>';
-                                    }
-                                    ?>
+                            $pos = $_SESSION['rol'] ?? ''; // Presupunem că rolul este stocat în sesiune cu cheia 'rol'
+                            if($pos == 'admin' ){
+                               echo '<li><a class="dropdown-item" href="administrareconturi.php">Administrare conturi</a></li>';
+                               echo '<li><a class="dropdown-item" href="incarcarefisiere.php">Încărcare fișiere</a></li>';
+                               echo '<li><hr class="dropdown-divider" /></li>';
+                            }
+                            echo '<li><a class="dropdown-item" href="logout.php">Logout</a></li>';
+                            echo '</ul>';
+                            echo '</li>';
+                        }
+                        else{
+                            echo '<li class="nav-item px-lg-4"><a class="nav-link text-uppercase" href="login.php">Cont</a></li>';
+                        }
+                        ?>
                     </ul>
                 </div>
             </div>
